@@ -1,9 +1,9 @@
 const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
-const authRoutes = require('./routes/authRoutes');
-const postRoutes = require('./routes/postRoutes');
-const { sanitizeInput, rateLimiter } = require('./middleware/sanitize');
+const authRoutes = require('./src/routes/authRoutes');     
+const postRoutes = require('./src/routes/postRoutes');     
+const { sanitizeInput, rateLimiter } = require('./src/middleware/sanitize');
 
 const app = express();
 

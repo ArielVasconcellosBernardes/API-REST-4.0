@@ -43,6 +43,7 @@ router.delete('/:id', protect, deletePost);
 router.post('/:id/like', protect, toggleLike);
 router.post('/:id/comments', protect, sanitizeInput, commentValidation, addComment);
 router.delete('/:id/comments/:commentId', protect, deleteComment);
-router.get('/user/:userId?', protect, getUserPosts);
+router.get('/user', protect, getUserPosts);           
+router.get('/user/:userId', protect, getUserPosts);   
 
 module.exports = router;
