@@ -1,11 +1,20 @@
 const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpec = require('./src/config/swaggerDef');
 const authRoutes = require('./src/routes/authRoutes');     
 const postRoutes = require('./src/routes/postRoutes');     
 const { sanitizeInput, rateLimiter } = require('./src/middleware/sanitize');
 
 const app = express();
+
+// Documentação interativa da API (Swagger UI).
+// Montada antes do helmet() para que o Content-Security-Policy padrão
+// não bloqueie os assets (CSS/JS) carregados pela própria interface do Swagger.
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+  customSiteTitle: 'Social API - Documentação'
+}));
 
 app.use(helmet());
 app.use(cors());
