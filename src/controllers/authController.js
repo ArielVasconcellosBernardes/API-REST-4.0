@@ -1,5 +1,6 @@
-const User = require('../models/User');
+const Usuario = require('../models/usuarioModel');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 const { validationResult } = require('express-validator');
 
 const generateToken = (id) => {
@@ -15,39 +16,34 @@ const register = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { username, email, password, bio } = req.body;
+    const { nome, username, email, password } = req.body;
+    const userName = nome || username;
 
-    const userExists = await User.findOne({ $or: [{ email }, { username }] });
-    if (userExists) {
-      return res.status(400).json({ 
-        error: userExists.email === email ? 'Email already registered' : 'Username already taken'
-      });
+    if (!userName) {
+      return res.status(400).json({ error: 'Nome e obrigatorio' });
     }
 
-    const user = await User.create({
-      username,
+    const userExists = await Usuario.findByEmail(email);
+    if (userExists) {
+      return res.status(400).json({ error: 'Email ja cadastrado' });
+    }
+
+    const user = await Usuario.create({
+      nome: userName,
       email,
-      password,
-      bio: bio || ''
+      password
     });
 
-    const token = generateToken(user._id);
+    const token = generateToken(user.id);
 
     res.status(201).json({
       success: true,
       token,
-      user: {
-        id: user._id,
-        username: user.username,
-        email: user.email,
-        bio: user.bio,
-        avatar: user.avatar,
-        createdAt: user.createdAt
-      }
+      user
     });
   } catch (error) {
     console.error('Register error:', error);
-    res.status(500).json({ error: 'Server error during registration' });
+    res.status(500).json({ error: 'Erro ao cadastrar usuario' });
   }
 };
 
@@ -60,64 +56,50 @@ const login = async (req, res) => {
 
     const { email, password } = req.body;
 
-    const user = await User.findOne({ email }).select('+password');
+    const user = await Usuario.findByEmail(email);
     
-    if (!user || !(await user.comparePassword(password))) {
-      return res.status(401).json({ error: 'Invalid email or password' });
+    const passwordMatches = user && (
+      await bcrypt.compare(password, user.senha).catch(() => false) || password === user.senha
+    );
+
+    if (!passwordMatches) {
+      return res.status(401).json({ error: 'Email ou senha invalidos' });
     }
 
-    const token = generateToken(user._id);
+    const token = generateToken(user.id);
 
     res.json({
       success: true,
       token,
       user: {
-        id: user._id,
-        username: user.username,
+        id: user.id,
+        nome: user.nome,
         email: user.email,
-        bio: user.bio,
-        avatar: user.avatar,
-        followers: user.followers.length,
-        following: user.following.length,
-        createdAt: user.createdAt
+        criadoEm: user.criado_em
       }
     });
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ error: 'Server error during login' });
+    res.status(500).json({ error: 'Erro ao fazer login' });
   }
 };
 
 const getMe = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id)
-      .select('-password')
-      .populate('followers', 'username avatar')
-      .populate('following', 'username avatar');
-    
     res.json({
       success: true,
-      user
+      user: req.user
     });
   } catch (error) {
     console.error('Get me error:', error);
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ error: 'Erro ao buscar usuario' });
   }
 };
 
 const updateProfile = async (req, res) => {
   try {
-    const { bio, avatar } = req.body;
-    const updates = {};
-    
-    if (bio !== undefined) updates.bio = bio;
-    if (avatar !== undefined) updates.avatar = avatar;
-    
-    const user = await User.findByIdAndUpdate(
-      req.user.id,
-      updates,
-      { new: true, runValidators: true }
-    ).select('-password');
+    const { nome, email, password } = req.body;
+    const user = await Usuario.update(req.user.id, { nome, email, password });
     
     res.json({
       success: true,
@@ -125,7 +107,7 @@ const updateProfile = async (req, res) => {
     });
   } catch (error) {
     console.error('Update profile error:', error);
-    res.status(500).json({ error: 'Server error updating profile' });
+    res.status(500).json({ error: 'Erro ao atualizar perfil' });
   }
 };
 

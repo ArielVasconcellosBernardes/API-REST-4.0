@@ -1,0 +1,18 @@
+$kind: http-request
+name: Delete Categoria
+method: DELETE
+url: '{{baseUrl}}/api/categorias/{{categoriaId}}'
+order: 5000
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{token}}'
+headers:
+  - key: x-user-id
+    value: '{{userId}}'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status 204 - Deletado com sucesso", () => pm.response.to.have.status(204));

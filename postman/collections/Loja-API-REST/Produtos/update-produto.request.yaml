@@ -1,0 +1,31 @@
+$kind: http-request
+name: Update Produto
+method: PUT
+url: '{{baseUrl}}/api/produtos/{{produtoId}}'
+order: 4000
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{token}}'
+headers:
+  - key: Content-Type
+    value: application/json
+  - key: x-user-id
+    value: '{{userId}}'
+body:
+  type: json
+  content: |-
+    {
+      "nome": "Notebook Pro",
+      "preco": 3499.99
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status 200 - Atualizado", () => pm.response.to.have.status(200));
+      pm.test("Dados atualizados", () => {
+        const json = pm.response.json();
+        pm.expect(json.success).to.be.true;
+      });

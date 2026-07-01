@@ -3,8 +3,12 @@ const helmet = require('helmet');
 const cors = require('cors');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./src/config/swaggerDef');
-const authRoutes = require('./src/routes/authRoutes');     
-const postRoutes = require('./src/routes/postRoutes');     
+const apiRoutes = require('./src/routes/apiRoutes');
+const authRoutes = require('./src/routes/authRoutes');
+const categoriaRoutes = require('./src/routes/categoriaRoutes');
+const produtosRoutes = require('./src/routes/produtosRoutes');
+const clientesRoutes = require('./src/routes/clientesRoutes');
+const pedidosRoutes = require('./src/routes/pedidosRoutes');
 const { sanitizeInput, rateLimiter } = require('./src/middleware/sanitize');
 
 const app = express();
@@ -13,7 +17,7 @@ const app = express();
 // Montada antes do helmet() para que o Content-Security-Policy padrão
 // não bloqueie os assets (CSS/JS) carregados pela própria interface do Swagger.
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
-  customSiteTitle: 'Social API - Documentação'
+  customSiteTitle: 'Loja API - Documentacao'
 }));
 
 app.use(helmet());
@@ -25,8 +29,12 @@ app.use(sanitizeInput);
 
 app.use(rateLimiter(100, 60000));
 
+app.use('/api', apiRoutes);
 app.use('/api/auth', authRoutes);
-app.use('/api/posts', postRoutes);
+app.use('/api/categorias', categoriaRoutes);
+app.use('/api/produtos', produtosRoutes);
+app.use('/api/clientes', clientesRoutes);
+app.use('/api/pedidos', pedidosRoutes);
 
 app.get('/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
@@ -38,7 +46,7 @@ app.use((req, res) => {
 
 app.use((err, req, res, next) => {
   console.error('Global error:', err);
-  res.status(500).json({ error: 'Internal server error' });
+  res.status(500).json({ error: 'Erro interno do servidor' });
 });
 
 module.exports = app;

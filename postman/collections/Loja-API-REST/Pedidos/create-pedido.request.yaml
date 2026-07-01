@@ -1,0 +1,42 @@
+$kind: http-request
+name: Create Pedido
+method: POST
+url: '{{baseUrl}}/api/pedidos'
+order: 3000
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{token}}'
+headers:
+  - key: Content-Type
+    value: application/json
+  - key: x-user-id
+    value: '{{userId}}'
+body:
+  type: json
+  content: |-
+    {
+      "cliente_id": 1,
+      "itens": [
+        {
+          "produto_id": 1,
+          "quantidade": 2
+        }
+      ]
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status 201 - Pedido criado", () => pm.response.to.have.status(201));
+      pm.test("Retorna dados do pedido", () => {
+        const json = pm.response.json();
+        pm.expect(json.success).to.be.true;
+        pm.expect(json.data).to.have.property("id");
+        pm.expect(json.data).to.have.property("cliente_id");
+      });
+      if (pm.response.code === 201) {
+        const json = pm.response.json();
+        pm.collectionVariables.set("pedidoId", json.data.id);
+      }

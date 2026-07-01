@@ -1,0 +1,79 @@
+CREATE DATABASE IF NOT EXISTS loja
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_unicode_ci;
+
+USE loja;
+
+CREATE TABLE IF NOT EXISTS usuarios (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  nome VARCHAR(100) NOT NULL,
+  email VARCHAR(150) NOT NULL UNIQUE,
+  senha VARCHAR(255) NOT NULL,
+  criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS categorias (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  nome VARCHAR(100) NOT NULL UNIQUE,
+  descricao TEXT NULL,
+  criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS produtos (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  nome VARCHAR(120) NOT NULL,
+  descricao TEXT NULL,
+  preco DECIMAL(10, 2) NOT NULL,
+  estoque INT NOT NULL DEFAULT 0,
+  categoria_id INT NOT NULL,
+  criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_produtos_categorias
+    FOREIGN KEY (categoria_id) REFERENCES categorias(id)
+    ON UPDATE CASCADE
+    ON DELETE RESTRICT
+);
+
+CREATE TABLE IF NOT EXISTS clientes (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  nome VARCHAR(120) NOT NULL,
+  email VARCHAR(150) NOT NULL UNIQUE,
+  telefone VARCHAR(30) NULL,
+  endereco VARCHAR(255) NULL,
+  criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS pedidos (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  cliente_id INT NOT NULL,
+  status VARCHAR(30) NOT NULL DEFAULT 'aberto',
+  total DECIMAL(10, 2) NOT NULL DEFAULT 0,
+  criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_pedidos_clientes
+    FOREIGN KEY (cliente_id) REFERENCES clientes(id)
+    ON UPDATE CASCADE
+    ON DELETE RESTRICT
+);
+
+CREATE TABLE IF NOT EXISTS itens_pedido (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  pedido_id INT NOT NULL,
+  produto_id INT NOT NULL,
+  quantidade INT NOT NULL,
+  preco_unitario DECIMAL(10, 2) NOT NULL,
+  CONSTRAINT fk_itens_pedido_pedidos
+    FOREIGN KEY (pedido_id) REFERENCES pedidos(id)
+    ON UPDATE CASCADE
+    ON DELETE CASCADE,
+  CONSTRAINT fk_itens_pedido_produtos
+    FOREIGN KEY (produto_id) REFERENCES produtos(id)
+    ON UPDATE CASCADE
+    ON DELETE RESTRICT
+);
+
+INSERT INTO usuarios (nome, email, senha)
+VALUES ('Administrador', 'admin@loja.com', '$2a$10$O4YKOz4hZYURdhgb73Zv0.ViywdwDz043v9.sNpIQN.xUhlPU.oz.')
+ON DUPLICATE KEY UPDATE nome = VALUES(nome);
+
+INSERT INTO categorias (nome, descricao)
+VALUES ('Geral', 'Categoria inicial para testes')
+ON DUPLICATE KEY UPDATE descricao = VALUES(descricao);

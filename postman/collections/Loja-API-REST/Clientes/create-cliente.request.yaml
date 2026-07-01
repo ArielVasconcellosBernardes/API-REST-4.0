@@ -1,0 +1,38 @@
+$kind: http-request
+name: Create Cliente
+method: POST
+url: '{{baseUrl}}/api/clientes'
+order: 3000
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{token}}'
+headers:
+  - key: Content-Type
+    value: application/json
+  - key: x-user-id
+    value: '{{userId}}'
+body:
+  type: json
+  content: |-
+    {
+      "nome": "João Silva",
+      "email": "joao@example.com",
+      "telefone": "11999999999"
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status 201 - Cliente criado", () => pm.response.to.have.status(201));
+      pm.test("Retorna dados do cliente", () => {
+        const json = pm.response.json();
+        pm.expect(json.success).to.be.true;
+        pm.expect(json.data).to.have.property("id");
+        pm.expect(json.data).to.have.property("nome");
+      });
+      if (pm.response.code === 201) {
+        const json = pm.response.json();
+        pm.collectionVariables.set("clienteId", json.data.id);
+      }

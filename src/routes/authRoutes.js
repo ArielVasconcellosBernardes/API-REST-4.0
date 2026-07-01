@@ -7,24 +7,24 @@ const { sanitizeInput, rateLimiter } = require('../middleware/sanitize');
 const router = express.Router();
 
 const registerValidation = [
-  body('username')
+  body('nome')
+    .optional()
     .trim()
     .isLength({ min: 3, max: 30 })
-    .withMessage('Username must be 3-30 characters')
-    .matches(/^[a-zA-Z0-9_]+$/)
-    .withMessage('Username can only contain letters, numbers, and underscore'),
+    .withMessage('Nome deve ter entre 3 e 30 caracteres'),
+  body('username')
+    .optional()
+    .trim()
+    .isLength({ min: 3, max: 30 })
+    .withMessage('Username deve ter entre 3 e 30 caracteres'),
   body('email')
     .trim()
     .isEmail()
     .normalizeEmail()
-    .withMessage('Please provide a valid email'),
+    .withMessage('Informe um email valido'),
   body('password')
     .isLength({ min: 6 })
-    .withMessage('Password must be at least 6 characters'),
-  body('bio')
-    .optional()
-    .isLength({ max: 500 })
-    .withMessage('Bio cannot exceed 500 characters')
+    .withMessage('Senha deve ter pelo menos 6 caracteres')
 ];
 
 const loginValidation = [
@@ -32,10 +32,10 @@ const loginValidation = [
     .trim()
     .isEmail()
     .normalizeEmail()
-    .withMessage('Please provide a valid email'),
+    .withMessage('Informe um email valido'),
   body('password')
     .notEmpty()
-    .withMessage('Password is required')
+    .withMessage('Senha e obrigatoria')
 ];
 
 router.post('/register', sanitizeInput, rateLimiter(5, 60000), registerValidation, register);

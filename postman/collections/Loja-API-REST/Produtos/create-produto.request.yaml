@@ -1,0 +1,39 @@
+$kind: http-request
+name: Create Produto
+method: POST
+url: '{{baseUrl}}/api/produtos'
+order: 3000
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{token}}'
+headers:
+  - key: Content-Type
+    value: application/json
+  - key: x-user-id
+    value: '{{userId}}'
+body:
+  type: json
+  content: |-
+    {
+      "nome": "Notebook",
+      "preco": 2999.99,
+      "categoria_id": 1
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status 201 - Produto criado", () => pm.response.to.have.status(201));
+      pm.test("Retorna dados do produto", () => {
+        const json = pm.response.json();
+        pm.expect(json.success).to.be.true;
+        pm.expect(json.data).to.have.property("id");
+        pm.expect(json.data).to.have.property("nome");
+        pm.expect(json.data).to.have.property("preco");
+      });
+      if (pm.response.code === 201) {
+        const json = pm.response.json();
+        pm.collectionVariables.set("produtoId", json.data.id);
+      }

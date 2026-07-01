@@ -1,16 +1,26 @@
-const mongoose = require('mongoose');
+const mysql = require('mysql2/promise');
+
+const pool = mysql.createPool({
+  host: process.env.DB_HOST || 'localhost',
+  port: Number(process.env.DB_PORT || 3306),
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD || '',
+  database: process.env.DB_NAME || 'loja',
+  waitForConnections: true,
+  connectionLimit: Number(process.env.DB_CONNECTION_LIMIT || 10),
+  queueLimit: 0
+});
 
 const connectDB = async () => {
   try {
-    const conn = await mongoose.connect(process.env.MONGODB_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-    console.log(`MongoDB Connected: ${conn.connection.host}`);
+    const connection = await pool.getConnection();
+    await connection.ping();
+    connection.release();
+    console.log(`MySQL conectado: ${process.env.DB_HOST || 'localhost'}/${process.env.DB_NAME || 'loja'}`);
   } catch (error) {
-    console.error('Database connection error:', error);
+    console.error('Erro ao conectar no MySQL:', error.message);
     process.exit(1);
   }
 };
 
-module.exports = connectDB;
+module.exports = { pool, connectDB };

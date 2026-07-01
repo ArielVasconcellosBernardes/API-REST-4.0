@@ -1,7 +1,7 @@
 {
-  "name": "api-rest",
-  "version": "1.0.0",
-  "description": "Social Media API",
+  "name": "loja-api-rest",
+  "version": "2.0.0",
+  "description": "API REST de loja com MySQL",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -16,7 +16,7 @@
     "express-validator": "^7.0.1",
     "helmet": "^7.0.0",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^7.5.0",
+    "mysql2": "^3.22.5",
     "swagger-jsdoc": "^6.3.0",
     "swagger-ui-express": "^5.0.1"
   },
